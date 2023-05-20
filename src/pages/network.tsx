@@ -1,13 +1,7 @@
 import styled from "@emotion/styled";
 import dayjs from "dayjs";
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import {
-  CellProps,
-  Column,
-  useSortBy,
-  UseSortByHooks,
-  useTable,
-} from "react-table";
+import React, { useMemo } from "react";
+import { CellProps, Column, useSortBy, useTable } from "react-table";
 import * as math from "mathjs";
 
 import {
@@ -16,7 +10,6 @@ import {
   useActiveDifficulty,
   useConfirmationHistory,
   useConfirmationQuorum,
-  useNodeTelemetry,
   useTelemetry,
   useTPS,
 } from "../api";
@@ -80,7 +73,7 @@ const SplitProperties = styled(Properties)`
 
 const EMPTY_DATA: Telemetry[] = [];
 
-export const NetworkScreen: React.FC = () => {
+export default function NetworkScreen() {
   const telemetryQuery = useTelemetry();
   const tpsQuery = useTPS();
   const quorumQuery = useConfirmationQuorum();
@@ -298,12 +291,13 @@ export const NetworkScreen: React.FC = () => {
           <table {...getTableProps()}>
             <thead>
               <tr>
-                {headers.map((column) => (
+                {headers.map((column, index) => (
                   <th
                     {...column.getHeaderProps([
                       { className: (column as any).className },
                       (column as any).getSortByToggleProps(),
                     ])}
+                    key={index}
                   >
                     {column.render("Header")}
                     <span>
@@ -320,14 +314,14 @@ export const NetworkScreen: React.FC = () => {
             <tbody {...getTableBodyProps()}>
               {rows.map((row, i) => {
                 prepareRow(row);
-
                 return (
-                  <Card as="tr" {...row.getRowProps()}>
-                    {row.cells.map((cell) => (
+                  <Card as="tr" {...row.getRowProps()} key={i}>
+                    {row.cells.map((cell, index) => (
                       <td
                         {...cell.getCellProps([
                           { className: (cell.column as any).className },
                         ])}
+                        key={index}
                       >
                         {cell.render("Cell")}
                       </td>
@@ -341,4 +335,4 @@ export const NetworkScreen: React.FC = () => {
       </Container>
     </Indicator>
   );
-};
+}

@@ -5,14 +5,13 @@ import { css } from '@emotion/css';
 import { useMediaQuery } from 'react-responsive'
 import {
     FaEnvelopeSquare,
-    FaReddit,
     FaRedditSquare,
-    FaTwitter,
-    FaTwitterSquare,
     FaRunning,
     FaGithub,
     FaMoon, FaSun
 } from 'react-icons/fa';
+import { useTheme } from '@/contexts/Theme';
+import Link from 'next/link';
 
 const footer = css`
   background: var(--header);
@@ -73,13 +72,9 @@ const footer = css`
   }
 `;
 
-interface IHeader {
-    dark: Boolean;
-    setDark: () => void;
-}
+export default function Footer () {
 
-
-export const Footer: React.FC<IHeader> = ({ dark, setDark }) => {
+    const { isDark, toggle: setDark } = useTheme();
 
     const isSmallerThan600 = useMediaQuery({
         query: '(max-width: 600px)'
@@ -87,7 +82,7 @@ export const Footer: React.FC<IHeader> = ({ dark, setDark }) => {
 
     return <footer className={footer}>
         <div style={{ textAlign: 'right' }}>
-            <a href="/node">Node Info</a>
+            <Link href="/node">Node Info</Link>
         </div>
         <div style={{ textAlign: 'center' }}>
             <a href="https://nano.community/introduction/basics" target="_blank" rel="noreferrer noopener">What is Nano?</a>
@@ -96,7 +91,7 @@ export const Footer: React.FC<IHeader> = ({ dark, setDark }) => {
         <main>
             {
                 isSmallerThan600 && (
-                    dark ? (
+                    isDark ? (
                         <button className={"modeToggle"} onClick={setDark}>
                             <FaMoon size={25} />
                         </button>

@@ -1,5 +1,4 @@
-import React, { useContext, useEffect, useState, useRef } from "react";
-import { Link, NavLink } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import { css } from "@emotion/css";
 import { AiOutlineClose, AiOutlineMenu } from "react-icons/ai";
 
@@ -15,10 +14,12 @@ import { formatSI, safeRawToMega } from "../utils";
 import { Search } from "./Search";
 import { FaMoon } from "react-icons/fa";
 import { FaSun } from "react-icons/fa";
-import { ThemeContext } from "./Theme";
 import { useMediaQuery } from "react-responsive";
 import { Toaster } from "react-hot-toast";
 import * as math from "mathjs";
+import Link from "next/link";
+import Image from "next/image";
+import { useTheme } from "@/contexts/Theme";
 
 const header = css`
   background: var(--header);
@@ -195,10 +196,10 @@ const header = css`
 const Menu: React.FC = () => {
   return (
     <>
-      <NavLink to="/charts">Charts</NavLink>
-      <NavLink to="earn">Earn</NavLink>
-      <NavLink to="/faucet">Faucet</NavLink>
-      <NavLink to="/network">Network</NavLink>
+      <Link href="/charts">Charts</Link>
+      <Link href="earn">Earn</Link>
+      <Link href="/faucet">Faucet</Link>
+      <Link href="/network">Network</Link>
     </>
   );
 };
@@ -214,12 +215,9 @@ function checkParent(target: HTMLElement): boolean {
   return false;
 }
 
-interface IHeader {
-  dark: Boolean;
-  setDark: () => void;
-}
+export default function Header() {
+  const { isDark, toggle: setDark } = useTheme();
 
-export const Header: React.FC<IHeader> = ({ dark, setDark }) => {
   const [menuExpanded, setMenuExpanded] = useState<Boolean>(false);
   const tpsQuery = useTPS();
 
@@ -313,19 +311,15 @@ export const Header: React.FC<IHeader> = ({ dark, setDark }) => {
           // Default options for specific types
           success: {
             duration: 3000,
-            theme: {
-              primary: "green",
-              secondary: "black",
-            },
           },
         }}
       />
       <nav>
-        <Link to="/">
-          {dark ? (
-            <img src={require("url:../../assets/logo_dark.svg")} />
+        <Link href="/">
+          {isDark ? (
+            <Image src={require("../assets/logo_dark.svg")} alt="logo-dark" />
           ) : (
-            <img src={require("url:../../assets/logo.svg")} />
+            <Image src={require("../assets/logo.svg")} alt="logo-light" />
           )}
 
           <h1>Nanocafe</h1>
@@ -349,7 +343,7 @@ export const Header: React.FC<IHeader> = ({ dark, setDark }) => {
         </aside>
 
         {!isSmallerThan600 &&
-          (dark ? (
+          (isDark ? (
             <button className={"modeToggle"} onClick={setDark}>
               <FaMoon size={25} />
             </button>
@@ -482,4 +476,4 @@ export const Header: React.FC<IHeader> = ({ dark, setDark }) => {
       </section>
     </header>
   );
-};
+}

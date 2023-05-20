@@ -1,28 +1,24 @@
 import { css } from "@emotion/css";
 import dayjs from "dayjs";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import isNanoAddress from "nano-address-validator";
-import { Link, useParams } from "react-router-dom";
 import {
   useAccountHistory,
   useAccountInfo,
   useAliases,
-  useNanoTicker,
   useConfirmationQuorum,
   useMNNAccount,
   usePending,
-} from "../api";
-import { Card } from "../components/Card";
-import { Indicator } from "../components/Indicator";
-import { IntlNumber, RawToUSD } from "../components/IntlNumber";
-import { Properties, PropertiesItem } from "../components/Properties";
-import { RawToMega, safeRawToMega } from "../utils";
+} from "../../api";
+import { Card } from "../../components/Card";
+import { Indicator } from "../../components/Indicator";
+import { RawToUSD } from "../../components/IntlNumber";
+import { Properties, PropertiesItem } from "../../components/Properties";
+import { RawToMega, safeRawToMega } from "../../utils";
 import { FaCopy } from "react-icons/fa";
-import toast, { Toaster } from "react-hot-toast";
-
-interface Params {
-  address: string;
-}
+import toast from "react-hot-toast";
+import { useRouter } from "next/router";
+import Link from "next/link";
 
 const account = css`
   padding: 1rem;
@@ -130,18 +126,22 @@ const account = css`
 
 const notify = () => toast.success("Address Copied");
 
-export const AccountScreen: React.FC = () => {
-  const { address } = useParams<Params>();
+export default function AccountScreen() {
+  const { query } = useRouter();
+
+  const { address: _address } = query;
+
+  const address = _address as string || '';
 
   const accountInfoQuery = useAccountInfo(address);
   const mnnAccountQuery = useMNNAccount(address);
-  const nodeAccountInfoQuery = useAccountInfo(process.env.NODE_ADDRESS!);
+  const nodeAccountInfoQuery = useAccountInfo(
+    process.env.NEXT_PUBLIC_NODE_ADDRESS!
+  );
   const accountHistoryQuery = useAccountHistory(address);
   const pendingQuery = usePending(address);
   const quorumQuery = useConfirmationQuorum();
   const aliases = useAliases();
-  const [textToCopy, setTextToCopy] = useState<String | null>(null);
-  const [isCopied, setIsCopied] = useState<boolean>(false);
 
   const pending = Object.entries(pendingQuery.data?.blocks ?? {});
   const alias = aliases.data?.find(
@@ -152,7 +152,7 @@ export const AccountScreen: React.FC = () => {
     const repWeight = parseFloat(
       safeRawToMega(
         (account &&
-          (account === process.env.NODE_ADDRESS
+          (account === process.env.NEXT_PUBLIC_NODE_ADDRESS
             ? nodeAccountInfoQuery.data?.weight
             : quorumQuery.data?.peers.find((peer) => peer.account === account)
                 ?.weight)) ||
@@ -188,6 +188,16 @@ export const AccountScreen: React.FC = () => {
     });
   };
 
+  if (typeof address !== 'string' || !isNanoAddress(address, ['nano', 'xrb'])) {
+    return (
+      <Indicator>
+        <main>
+          <h2>Invalid Address</h2>
+        </main>
+      </Indicator>
+    );
+  }
+
   return (
     <Indicator>
       <main className={account}>
@@ -218,23 +228,23 @@ export const AccountScreen: React.FC = () => {
                     screen:
                   </h4>
                   <p>
-                    (1) The account you're searching has recently been created
+                    (1) The account you&apos;re searching has recently been created
                     and you have yet to receive a transaction into your account.
                   </p>
                   <p>
-                    (2) The transaction you're searching has yet to be fully
+                    (2) The transaction you&apos;re searching has yet to be fully
                     received.
                   </p>
                   <p>(3) This account is invalid and does not exist.</p>
                   <p>
                     You can also try searching the block hash of the transaction
-                    if the account address isn't working.
+                    if the account address isn&apos;t working.
                   </p>
                   <p>
-                    IMPORTANT: When a transaction is pending "ready to receive",
+                    IMPORTANT: When a transaction is pending &apos;ready to receive&apos;,
                     the transaction is inside your account, it is not lost or in
                     any other account, simply open your wallet to confirm the
-                    pending "ready to receive".
+                    pending &apos;ready to receive&apos;.
                   </p>
                 </>
               ) : (
@@ -291,13 +301,13 @@ export const AccountScreen: React.FC = () => {
 
                 <PropertiesItem label="Representative:">
                   <span>
-                    <Link to={`/${accountInfoQuery.data?.representative}`}>
+                    <Link href={`/${accountInfoQuery.data?.representative}`}>
                       {accountInfoQuery.data?.representative}
                     </Link>
                     <br />
                     <sub>
                       {accountInfoQuery.data?.representative ===
-                        process.env.NODE_ADDRESS ||
+                        process.env.NEXT_PUBLIC_NODE_ADDRESS ||
                       !!quorumQuery.data?.peers.find(
                         (rep) =>
                           rep.account === accountInfoQuery.data?.representative
@@ -380,10 +390,10 @@ export const AccountScreen: React.FC = () => {
                             </>
                           )}
                         </strong>
-                        <Link to={`/${hash}`} className="hash">
+                        <Link href={`/${hash}`} className="hash">
                           {hash}
                         </Link>
-                        <Link to={`/${block.source}`}>{block.source}</Link>
+                        <Link href={`/${block.source}`}>{block.source}</Link>
                       </li>
                     ))}
                   </ul>
@@ -413,10 +423,10 @@ export const AccountScreen: React.FC = () => {
                       ? dayjs(block.local_timestamp).format("LLL")
                       : "Unknown"}
                   </span>
-                  <Link to={`/${block.hash}`} className="hash">
+                  <Link href={`/${block.hash}`} className="hash">
                     {block.hash}
                   </Link>
-                  <Link to={`/${block.account}`}>{block.account}</Link>
+                  <Link href={`/${block.account}`}>{block.account}</Link>
                 </li>
               ))}
             </ul>
@@ -425,4 +435,4 @@ export const AccountScreen: React.FC = () => {
       </main>
     </Indicator>
   );
-};
+}
